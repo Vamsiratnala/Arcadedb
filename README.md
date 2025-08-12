@@ -47,24 +47,24 @@ schema = {
 
 **For CSV data:**
 
-* Directly converted into JSON format by defining schema.
+* Directly converted into JSON format .
 
 ```python
 import pandas as pd
 
 df = pd.read_csv('data.csv')
-json_data = df.to_dict(orient='records')
+data = df.to_dict(orient='records')
 ```
 
 ---
 
 ### 2. Automating Cypher Query Generation
 
-* LLM is prompted with schema and relationships to generate Cypher queries.
+* To generate cypher queries provide the schema and the json data to the llm to get cypher queries.
+* you can use the function "get_cypher_queries_from_llm(data, llm)" available in the "create_graph.ipynb" file.
 
 ```python
-prompt = f"Generate Cypher queries for the following schema: {schema}"
-queries = llm.generate(prompt)
+query = get_cypher_queries_from_llm(your_data,your_llm)
 ```
 
 ---
@@ -72,37 +72,22 @@ queries = llm.generate(prompt)
 ### 3. Creating Graph in ArcadeDB
 
 * Used ArcadeDB **HTTP API** to create vertices and edges.
+* create a database and push the data into the database using "run_cypher" funtion.
 
 ```python
-import requests
-
-url = "http://localhost:2480/command/graphdb/sql"
-headers = {"Authorization": "Basic ..."}
-
-data = {
-    "command": "CREATE VERTEX Person SET Name='John Doe'"
-}
-
-response = requests.post(url, headers=headers, json=data)
+  create_database(db_name)
+  run_cypher(query)
 ```
-
+* Run all the queries to get the complete graph.
 ---
 
 ### 4. Serving Data with FastAPI
 
 * Fetch graph data from ArcadeDB and serve via FastAPI.
+* Install all the dependencies from 'myenv' in 'arcade-backend'
+* Use the 'app function' in the main.py file from the 'arcade-backend' folder
 
 ```python
-from fastapi import FastAPI
-import requests
-
-app = FastAPI()
-
-@app.get("/graph")
-def get_graph():
-    response = requests.post(url, headers=headers, json={"command": "MATCH (n)-[r]->(m) RETURN n,r,m"})
-    return response.json()
-
 # Run with: uvicorn main:app --reload
 ```
 
@@ -110,23 +95,10 @@ def get_graph():
 
 ### 5. Visualizing Graph with Angular
 
+* Create an angular project with all the required dependencies from "arcade-frontend"
 * Used **vis-graph** to render the graph in the frontend.
-
-```typescript
-const nodes = new DataSet(response.nodes.map(node => ({
-  id: node['@rid'],
-  label: node['Name'] || 'Node'
-})));
-
-const edges = new DataSet(response.edges.map(edge => ({
-  from: edge.out,
-  to: edge.in
-})));
-
-const container = document.getElementById('graph');
-const data = { nodes, edges };
-new Network(container, data, {});
-```
+* Inside the Angular Application 
+# Run with: ng serve 
 
 ---
 
