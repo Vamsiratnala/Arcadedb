@@ -17,7 +17,7 @@
 
 This project demonstrates a complete pipeline for:
 
-* Extracting entities and relationships from text/CSV data.
+* Extracting data from text/CSV data.
 * Automating Cypher query generation with LLM.
 * Creating and storing graphs in ArcadeDB.
 * Serving the data via FastAPI.
@@ -60,8 +60,8 @@ data = df.to_dict(orient='records')
 
 ### 2. Automating Cypher Query Generation
 
-* To generate cypher queries provide the schema and the json data to the llm to get cypher queries.
-* you can use the function "get_cypher_queries_from_llm(data, llm)" available in the "create_graph.ipynb" file.
+* To generate cypher queries provide the schema (for vertices and edges) and  json data to the llm as the prompt .
+* you can use the function "get_cypher_queries_from_llm(data, llm)" available in the "create_graph.ipynb" file for generating cypher queries.
 
 ```python
 query = get_cypher_queries_from_llm(your_data,your_llm)
@@ -72,7 +72,7 @@ query = get_cypher_queries_from_llm(your_data,your_llm)
 ### 3. Creating Graph in ArcadeDB
 
 * Used ArcadeDB **HTTP API** to create vertices and edges.
-* create a database and push the data into the database using "run_cypher" funtion.
+* create a database and push the data into the database using "run_cypher" funtion from "create_graph.ipynb" file.
 
 ```python
   create_database(db_name)
@@ -85,7 +85,7 @@ query = get_cypher_queries_from_llm(your_data,your_llm)
 
 * Fetch graph data from ArcadeDB and serve via FastAPI.
 * Install all the dependencies from 'myenv' in 'arcade-backend'
-* Use the 'app function' in the main.py file from the 'arcade-backend' folder
+* Run the 'app' in the 'main.py' file from the 'arcade-backend' folder
 
 ```python
 # Run with: uvicorn main:app --reload
@@ -97,8 +97,10 @@ query = get_cypher_queries_from_llm(your_data,your_llm)
 
 * Create an angular project with all the required dependencies from "arcade-frontend"
 * Used **vis-graph** to render the graph in the frontend.
-* Inside the Angular Application 
+* Run this command inside your Angular Application.
+```python
 # Run with: ng serve 
+```
 
 ---
 
