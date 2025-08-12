@@ -1,4 +1,4 @@
-# Graph Data Extraction and Visualization Pipeline
+# Graph Creation and Visualization Pipeline
 
 ## Table of Contents
 
