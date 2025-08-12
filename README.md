@@ -50,12 +50,9 @@ cypher_queries = llm.generate(prompt)
 Created vertices and edges using ArcadeDB's HTTP API.
 
 requests.post(f"{ARCADEDB_URL}/api/v1/command/graphdb/sql", auth=AUTH, json={"command": query})
-4️⃣ Serving Data with FastAPI Backend
+## **4️⃣ Serving Data with FastAPI Backend**
 Used FastAPI to retrieve graph data from ArcadeDB and serve it to the frontend.
 
-python
-Copy
-Edit
 @app.get("/graph")
 def get_graph():
     query = "MATCH (n)-[r]->(m) RETURN n, r, m"
@@ -64,12 +61,10 @@ def get_graph():
         auth=AUTH,
         json={"command": query}
     ).json()
-5️⃣ Angular Frontend Visualization
-Fetched backend data and displayed it using vis-network.
+    
+## **5️⃣ Angular Frontend Visualization**
 
-typescript
-Copy
-Edit
+Fetched backend data and displayed it using vis-network.
 const nodes = new DataSet(data.nodes);
 const edges = new DataSet(data.edges);
 new Network(container!, { nodes, edges }, {});
