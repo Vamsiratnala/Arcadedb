@@ -1,70 +1,133 @@
-# 🚀 Graph Data Extraction, Query Automation & Visualization Pipeline
+# Graph Data Extraction and Visualization Pipeline
 
-A complete end-to-end pipeline for:
-- Extracting **nodes** and **relationships** from various data sources
-- Generating **Cypher queries** automatically using LLMs
-- Building and storing graphs in **ArcadeDB**
-- Serving the graph via a **FastAPI backend**
-- Visualizing the graph in an **Angular frontend** using `vis-graph`
+## Table of Contents
 
----
-
-## 📑 Table of Contents
 1. [Overview](#overview)
-2. [1️⃣ Extracting Nodes & Relationships](#1️⃣-extracting-nodes--relationships)
-    - [From Text Data](#from-text-data)
-    - [From CSV Data](#from-csv-data)
-3. [2️⃣ Automating Cypher Query Generation](#2️⃣-automating-cypher-query-generation)
-4. [3️⃣ Creating Graph in ArcadeDB](#3️⃣-creating-graph-in-arcadedb-via-http-apis)
-5. [4️⃣ Serving Data with FastAPI Backend](#4️⃣-serving-data-with-fastapi-backend)
-6. [5️⃣ Angular Frontend Visualization](#5️⃣-angular-frontend-visualization)
-7. [License](#-license)
+2. [Steps](#steps)
+
+   * [1. Extracting Nodes and Relationships](#1-extracting-nodes-and-relationships)
+   * [2. Automating Cypher Query Generation](#2-automating-cypher-query-generation)
+   * [3. Creating Graph in ArcadeDB](#3-creating-graph-in-arcadedb)
+   * [4. Serving Data with FastAPI](#4-serving-data-with-fastapi)
+   * [5. Visualizing Graph with Angular](#5-visualizing-graph-with-angular)
 
 ---
 
 ## Overview
-This project takes raw data (Text or CSV), extracts meaningful entities and relationships, converts them into a graph schema, stores them in **ArcadeDB**, and visualizes the resulting graph in an **Angular frontend**.
+
+This project demonstrates a complete pipeline for:
+
+* Extracting entities and relationships from text/CSV data.
+* Automating Cypher query generation with LLM.
+* Creating and storing graphs in ArcadeDB.
+* Serving the data via FastAPI.
+* Visualizing the graph in an Angular application using `vis-graph`.
 
 ---
 
-## **1️⃣ Extracting Nodes & Relationships**
+## Steps
 
-### From Text Data
-- **Step 1:** Performed **semantic chunking** on **propositions extracted from text**.
-- **Step 2:** Extracted **entities** and **relations** using an LLM, guided by a predefined schema.
+### 1. Extracting Nodes and Relationships
 
-chunks = semantic_chunking(text)
-llm.generate(f"Extract entities & relations from: {chunks}, using schema: {schema}")
-### From CSV Data
-Directly mapped columns to schema and converted to JSON.
+**For text data:**
 
-df = pd.read_csv(file_path)
-graph_json = df.to_dict(orient="records")
-## **2️⃣ Automating Cypher Query Generation**
+* Used **semantic chunking** on propositions extracted from text.
+* Entities and relationships are extracted and provided to the LLM with a schema.
 
-Used an LLM prompt to generate Cypher queries from extracted data.
+```python
+# Example: Semantic chunking and entity extraction
+chunks = semantic_chunking(propositions)
+entities, relations = extract_entities_relations(chunks)
 
-cypher_queries = llm.generate(prompt)
+schema = {
+    "nodes": ["Person", "Item", "InstagramAccount", "Location"],
+    "relationships": ["PAST_PURCHASED", "FOLLOWS", "LOCATED_IN"]
+}
+```
 
-## **3️⃣ Creating Graph in ArcadeDB via HTTP APIs**
-Created vertices and edges using ArcadeDB's HTTP API.
+**For CSV data:**
 
-requests.post(f"{ARCADEDB_URL}/api/v1/command/graphdb/sql", auth=AUTH, json={"command": query})
-## **4️⃣ Serving Data with FastAPI Backend**
-Used FastAPI to retrieve graph data from ArcadeDB and serve it to the frontend.
+* Directly converted into JSON format by defining schema.
+
+```python
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+json_data = df.to_dict(orient='records')
+```
+
+---
+
+### 2. Automating Cypher Query Generation
+
+* LLM is prompted with schema and relationships to generate Cypher queries.
+
+```python
+prompt = f"Generate Cypher queries for the following schema: {schema}"
+queries = llm.generate(prompt)
+```
+
+---
+
+### 3. Creating Graph in ArcadeDB
+
+* Used ArcadeDB **HTTP API** to create vertices and edges.
+
+```python
+import requests
+
+url = "http://localhost:2480/command/graphdb/sql"
+headers = {"Authorization": "Basic ..."}
+
+data = {
+    "command": "CREATE VERTEX Person SET Name='John Doe'"
+}
+
+response = requests.post(url, headers=headers, json=data)
+```
+
+---
+
+### 4. Serving Data with FastAPI
+
+* Fetch graph data from ArcadeDB and serve via FastAPI.
+
+```python
+from fastapi import FastAPI
+import requests
+
+app = FastAPI()
 
 @app.get("/graph")
 def get_graph():
-    query = "MATCH (n)-[r]->(m) RETURN n, r, m"
-    return requests.post(
-        f"{ARCADEDB_URL}/api/v1/command/graphdb/cypher",
-        auth=AUTH,
-        json={"command": query}
-    ).json()
-    
-## **5️⃣ Angular Frontend Visualization**
+    response = requests.post(url, headers=headers, json={"command": "MATCH (n)-[r]->(m) RETURN n,r,m"})
+    return response.json()
 
-Fetched backend data and displayed it using vis-network.
-const nodes = new DataSet(data.nodes);
-const edges = new DataSet(data.edges);
-new Network(container!, { nodes, edges }, {});
+# Run with: uvicorn main:app --reload
+```
+
+---
+
+### 5. Visualizing Graph with Angular
+
+* Used **vis-graph** to render the graph in the frontend.
+
+```typescript
+const nodes = new DataSet(response.nodes.map(node => ({
+  id: node['@rid'],
+  label: node['Name'] || 'Node'
+})));
+
+const edges = new DataSet(response.edges.map(edge => ({
+  from: edge.out,
+  to: edge.in
+})));
+
+const container = document.getElementById('graph');
+const data = { nodes, edges };
+new Network(container, data, {});
+```
+
+---
+
+**End of README**
